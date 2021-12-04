@@ -1,0 +1,155 @@
+
+#Analisis y Muestreo con R
+
+# Carga de paquetes ---------------------------------------------
+#Instalacion y activacion de paquetes 
+install.packages("gtools", dependencies = TRUE)
+install.packages("dplyr", dependencies = TRUE)
+install.packages("survey", dependencies = TRUE)
+#Activar las librerias
+library(gtools)
+library(dplyr)
+library(survey)
+
+# Permutacion y combinacion -------------------------------------
+#Asuma una poblacion N=4 
+#Cuantas muestras de tamaÃ±o n=2 son posibles?
+
+#Muestreo con reemplazo N^n
+N=4
+n=2
+N^n #Se pueden generar 16 muestras con reemplazo de tamaÃ±o 2
+(x<-1:4)
+#Visualizar las muestras posibles
+permutations(n=4,r=2,v=x,repeats.allowed=T)
+
+#Muestreo sin reemplazo comb(N n)
+#Calcula el nÃºmero de muestras tamaÃ±o n=2 posibles de una poblacion N=4 SIN reemplazo
+choose(4,2)#Se pueden generar 16 muestras sin reemplazo de tamaÃ±o 2
+#Ver cuales son las muestras que se generan
+combinations(4, 2, v=x)
+
+##*************************#*************************#*************************
+#Distribucion de la media muestral en muestras con reemplazo
+
+#Se genera 4 elementos Asumiendo la POBLACIoN Y SUS ELEMENTOS
+(x<-1:4)
+#Calcula la longitud de x
+(n<-length(x))
+#Calcula la media
+(mu<-mean(x))
+#Calcula la varianza
+(va<-sum((x-mu)^2)/n)
+
+#Con reemplazo
+#Generan todas las posibles muestras con reemplazo de tamaÃ±o 2 y se las guasrda en el objeto muestra
+muestras<-permutations(n=4,r=2,v=x,repeats.allowed = T)
+#Calcula la media a cada muestra generada y se almacena en objeto xbar_n_i
+(xbar_n_i<-rowMeans(muestras))
+#Se realiza el calculo de las veces que se obtiene determinado valor muestral
+(fx_i<-prop.table(table(xbar_n_i)))
+#Se grafica la distribucion de medias muestrales
+barplot(prop.table(table(xbar_n_i)))
+
+#Se selecciona los elementos unicos de las medias muestrales resultantes
+xbar_i<-unique(xbar_n_i)
+#Calcula la esperanza o valor esperado de la distribucion de medias muestrales
+(esp_xbar<-sum(xbar_i*fx_i))
+#Calcula la varianza de la distribucion de medias muestrales
+(var_xbar<-sum((xbar_i-esp_xbar)^2*fx_i))
+
+#AnÃ¡lisis: 
+#El valor de la media poblacional mu=2.5
+mu
+#El valor de la media de distribucion de medias muestrales es esp_xbar=2.5
+esp_xbar
+#Cumpliendose que el la media muestral es un estimador insesgado de la media poblacional 
+
+#El valor de la varianza poblacional va=1.25
+va
+#El valor de la varianza de distribucion de medias muestrales es var_xbar=0.625
+var_xbar
+#Es menor el estadistico que el parÃ¡metro
+#Cumpliendose que el la varianza muestral es un estimador sesgado de la varianza poblacional 
+
+#En la practica es imposible trabajar con la distribucion empirica del
+#estadstico, obtenida a partir de todas las muestras posibles de
+#igual tamaÃ±o, por lo que es importante establecer un modelo
+#teorico de probabilidad para los estadsticos muestrales.
+
+##*************************#*************************#*************************
+#DistribuciÃ³n de la media muestral en muestras sin reemplazo
+
+#se genera 4 elementos Asumiendo la POBLACIoN Y SUS ELEMENTOS
+(x<-1:4)
+#Calcula la longitud de x
+(n<-length(x))
+#Calcula la media
+(mu<-mean(x))
+#Calcula la varianza
+(va<-sum((x-mu)^2)/n)
+
+#Con reemplazo
+#Generan todas las posibles muestras con reemplazo de tamaÃ±o 2 y se las guasrda en el objeto muestra
+muestras<-combinations(4,2,v=x)
+#Calcula la media a cada muestra generada y se almacena en objeto xbar_n_i
+(xbar_n_i<-rowMeans(muestras))
+#Se realiza el calculo de las veces que se obtiene determinado valor muestral
+(fx_i<-prop.table(table(xbar_n_i)))
+#Se grafica la distribucion de medias muestrales
+barplot(prop.table(table(xbar_n_i)))
+
+#Se selecciona los elementos unicos de las medias muestrales resultantes
+xbar_i<-unique(xbar_n_i)
+#Calcula la esperanza o valor esperado de la distribucion de medias muestrales
+(esp_xbar<-sum(xbar_i*fx_i))
+#Calcula la varianza de la distribucion de medias muestrales
+(var_xbar<-sum((xbar_i-esp_xbar)^2*fx_i))
+
+#Analisis: 
+#El valor de la media poblacional mu=2.5
+mu
+#El valor de la media de distribucion de medias muestrales es esp_xbar=2.5
+esp_xbar
+#Cumpliendose que el la media muestral es un estimador insesgado de la media poblacional 
+
+#El valor de la varianza poblacional va=1.25
+va
+#El valor de la varianza de distribucion de medias muestrales es var_xbar=0.4166
+var_xbar
+#Es menor el estaditico que el parÃ¡metro
+#Cumpliendose que el la varianza muestral es un estimador sesgado de la varianza poblacional 
+
+
+# TLC ---------------------------------------------------------------------
+#*************************Teorema del Limite Central#*************************
+
+#Muestra aleatoria simple
+#Uso de sample generar muestras segun indique con o sin reeplazo
+sample(1:10, 20, replace = T)
+
+#Teorema del limite central
+#Cualquiera que sea la distribucion de la poblacion
+# si n es lo suficiente grande 
+#la suma (estimacion) de la variable
+#se distribuye aprox como una Normal con esperanza nu y varianza nsigma
+
+N <- rbinom(1000, 100, 0.5) #Funcion Binomial
+#N <- rexp(1000, 1/10) #Funcion exponencial
+#N <- runif(1000, 10, 50) #Funcion uniforme
+n <- numeric(100) #puede cambiar los valores de segun tamano
+ni<-length(n)
+for (i in 1:ni) {
+n[i] <- sum(sample(N, ni, replace = TRUE)) #sample muestrea 
+}
+#sum(sample(N, ni, replace = TRUE))
+#puede varia sum, mean y prop segun el parametro de interes
+
+par(mfrow=c(1,2)) #divide la pantalla grafica en una fila y dos columnas
+hist(N, probability = T)
+hist(n, probability = T)
+curve(dnorm(x, mean(n), sd(n)), col = 2, lty = 2,
+      lwd = 2, add=T)
+par(mfrow=c(1,1)) #volver a 1 la dimension grafica
+
+
